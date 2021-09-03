@@ -1,0 +1,8 @@
+name: CoreDetectorPlugin
+version: ${version}
+main: io.github.monull.coredetector.plugin.CoreDetectorPlugin
+api-version: 1.17
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib:1.5.30
+  - org.jetbrains.kotlin:kotlin-reflect:1.5.30
+  - io.github.monun:kommand:2.6.4
