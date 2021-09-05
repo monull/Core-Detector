@@ -6,13 +6,15 @@ import net.kyori.adventure.text.Component.text
 import org.bukkit.boss.BarColor
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scoreboard.Team
 
 class CoreDetectorPlugin : JavaPlugin() {
-    private lateinit var manager: CoreTriggerManager
+    lateinit var manager: CoreTriggerManager
 
     override fun onEnable() {
         manager = CoreTriggerManager(dataFolder)
 
+        server.scheduler.runTaskTimer(this, CoreScheduler(this), 0L, 1L)
         setupCommands()
     }
 
@@ -25,7 +27,7 @@ class CoreDetectorPlugin : JavaPlugin() {
                 suggests {
                     val barColors = BarColor.values()
                     val colors = arrayListOf<String>()
-                    barColors.forEach { colors += it.name }
+                    barColors.forEach { colors += it.name.uppercase() }
                     suggest(colors)
                 }
             }
@@ -33,6 +35,20 @@ class CoreDetectorPlugin : JavaPlugin() {
                 then("name" to string()) {
                     then("color" to barColorArgument) {
                         requires { playerOrNull != null }
+                        then("team" to team()) {
+                            executes {
+                                val sender = sender as Player
+                                val block = sender.getTargetBlock(64)
+                                val team: Team = it["team"]
+
+                                if (block == null) {
+                                    feedback(text("지정할 블럭이 없습니다."))
+                                } else {
+                                    manager.registerTrigger(block, it["name"], it["color"], team)
+                                    feedback(text("${block.world.name} ${block.x} ${block.y} ${block.z} ${team.name}"))
+                                }
+                            }
+                        }
                         executes {
                             val sender = sender as Player
                             val block = sender.getTargetBlock(64)
